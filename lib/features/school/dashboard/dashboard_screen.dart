@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:udaan_campus/models/user_role.dart';
 import 'package:udaan_campus/services/auth_provider.dart';
@@ -50,6 +51,10 @@ class DashboardShell extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const Padding(
+          padding: EdgeInsets.all(8),
+          child: UdaanLogoMark(size: 34),
+        ),
         title: Text(title),
         actions: [
           IconButton(
@@ -68,10 +73,13 @@ class DashboardShell extends StatelessWidget {
             const SizedBox(height: 16),
             if (user != null)
               Card(
-                elevation: 1,
+                elevation: 0,
+                color: Theme.of(context).colorScheme.primaryContainer.withAlpha(150),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 child: ListTile(
                   leading: CircleAvatar(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Colors.white,
                     child: Text(user.displayName.isNotEmpty
                         ? user.displayName[0].toUpperCase()
                         : user.role[0].toUpperCase()),
@@ -80,20 +88,12 @@ class DashboardShell extends StatelessWidget {
                   subtitle: Text('Role: ${user.role}'),
                 ),
               ),
-              const SizedBox(height: 8),
-              const Card(
-                child: ListTile(
-                  leading: Icon(Icons.info_outline),
-                  title: Text('About Udaan Academy'),
-                  subtitle: Text(
-                    'Developed by Udaan Academy (Umesh Sharma)\n'
-                    'Mobile: 9785705358\n'
-                    'Address: Bharatpur, Rajasthan',
-                  ),
-                  isThreeLine: true,
+              if (user?.role == UserRole.student || user?.role == UserRole.teacher)
+                const Padding(
+                  padding: EdgeInsets.only(top: 16, bottom: 4),
+                  child: MotivationCarousel(),
                 ),
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
             Expanded(
               child: GridView.count(
                 crossAxisCount: MediaQuery.of(context).size.width > 700 ? 3 : 1,
@@ -103,6 +103,18 @@ class DashboardShell extends StatelessWidget {
                 children: children,
               ),
             ),
+            const SizedBox(height: 12),
+            const Text(
+              'Developed by Udaan Academy',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xff53627c)),
+            ),
+            const Text(
+              'Umesh Sharma  |  Bharatpur, Rajasthan  |  9785705358',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 11, color: Color(0xff7c879c)),
+            ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -130,7 +142,8 @@ class DashboardActionCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Card(
-        elevation: 2,
+        elevation: 0,
+        color: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -160,6 +173,179 @@ class DashboardActionCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class UdaanLogoMark extends StatelessWidget {
+  const UdaanLogoMark({super.key, this.size = 54});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(size * .28),
+          gradient: const LinearGradient(
+            colors: [Color(0xff175bd1), Color(0xff12a5a0)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x33175bd1),
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(Icons.menu_book_rounded, size: size * .54, color: Colors.white),
+            Positioned(
+              top: size * .12,
+              right: size * .1,
+              child: Icon(Icons.flight_takeoff_rounded, size: size * .24, color: Colors.white),
+            ),
+          ],
+        ),
+    );
+  }
+}
+
+class MotivationCarousel extends StatefulWidget {
+  const MotivationCarousel({super.key});
+
+    @override
+  State<MotivationCarousel> createState() => _MotivationCarouselState();
+}
+
+class _MotivationCarouselState extends State<MotivationCarousel> {
+  static const _slides = [
+      ('Believe in yourself', 'Every big achievement starts with one brave step.', 'photo-1497633762265-9d179a990aa6'),
+      ('Learn something new', 'Knowledge grows when curiosity leads the way.', 'photo-1503676260728-1c00da094a0b'),
+      ('Dream. Plan. Achieve.', 'Your consistent effort is building your future.', 'photo-1523240795612-9a054b0db644'),
+      ('Stay focused', 'Small daily progress creates extraordinary results.', 'photo-1434030216411-0b793f4b4173'),
+      ('Be wonderfully curious', 'Questions are the beginning of every discovery.', 'photo-1531482615713-2afd69097998'),
+      ('Kindness is strength', 'Lift others while you rise.', 'photo-1509062522246-3755977927d7'),
+      ('Your time is now', 'Do not wait for the perfect moment to begin.', 'photo-1516321318423-f06f85e504b3'),
+      ('Practice makes progress', 'Keep showing up. Your future self will thank you.', 'photo-1541339907198-e08756dedf3f'),
+      ('Think beyond limits', 'A creative mind can find a way forward.', 'photo-1453738773917-dcbc65e6ff1b'),
+      ('Make today count', 'Give your best to the opportunity in front of you.', 'photo-1522202176988-66273c2fd55f'),
+    ];
+  late final PageController _controller;
+  Timer? _timer;
+  int _page = 0;
+
+  @override
+  void initState() {
+      super.initState();
+      _controller = PageController();
+      _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+        if (!mounted) return;
+        _page = (_page + 1) % _slides.length;
+        _controller.animateToPage(
+          _page,
+          duration: const Duration(milliseconds: 650),
+          curve: Curves.easeOutCubic,
+        );
+      });
+  }
+
+  @override
+  void dispose() {
+      _timer?.cancel();
+      _controller.dispose();
+      super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+      return SizedBox(
+        height: 164,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(22),
+          child: Stack(
+            children: [
+              PageView.builder(
+                controller: _controller,
+                itemCount: _slides.length,
+                onPageChanged: (page) => setState(() => _page = page),
+                itemBuilder: (context, index) {
+                  final slide = _slides[index];
+                  return Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.network(
+                        'https://images.unsplash.com/${slide.$2}?auto=format&fit=crop&w=1200&q=80',
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Color(0xff175bd1), Color(0xff12a5a0)],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(color: Colors.black.withAlpha(105)),
+                      Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: FractionallySizedBox(
+                            widthFactor: .78,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(slide.$1,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                    )),
+                                const SizedBox(height: 6),
+                                Text(slide.$3,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      height: 1.3,
+                                    )),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              Positioned(
+                left: 20,
+                bottom: 12,
+                child: Row(
+                  children: List.generate(
+                    _slides.length,
+                    (index) => AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      margin: const EdgeInsets.only(right: 4),
+                      width: index == _page ? 18 : 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(index == _page ? 240 : 130),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
   }
 }
 
@@ -224,6 +410,12 @@ class ManagerDashboard extends StatelessWidget {
           subtitle: 'Upload and download paper PDFs.',
           onTap: () => Navigator.pushNamed(context, '/exam_papers'),
         ),
+        DashboardActionCard(
+          icon: Icons.auto_awesome,
+          title: 'AI Paper Builder',
+          subtitle: 'Create reviewable questions from content and share drafts.',
+          onTap: () => Navigator.pushNamed(context, '/paper_builder'),
+        ),
       ],
     );
   }
@@ -267,6 +459,12 @@ class TeacherDashboard extends StatelessWidget {
           title: 'Exam Papers',
           subtitle: 'Upload and download paper PDFs.',
           onTap: () => Navigator.pushNamed(context, '/exam_papers'),
+        ),
+        DashboardActionCard(
+          icon: Icons.auto_awesome,
+          title: 'AI Paper Builder',
+          subtitle: 'Create reviewable questions from content and share drafts.',
+          onTap: () => Navigator.pushNamed(context, '/paper_builder'),
         ),
         DashboardActionCard(
           icon: Icons.message,
