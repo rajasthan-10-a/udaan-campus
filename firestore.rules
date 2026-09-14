@@ -138,6 +138,33 @@ service cloud.firestore {
       allow update, delete: if isSignedIn() && (isSuperManager() || resource.data.uploadedBy == request.auth.uid);
     }
 
+    match /courses/{courseId} {
+      allow read: if isSignedIn() &&
+        (resource.data.status == 'PUBLISHED' || isManager());
+      allow create: if isSignedIn() && isManager();
+      allow update: if isSignedIn() &&
+        (isSuperManager() || resource.data.createdBy == request.auth.uid);
+      allow delete: if isSignedIn() && isSuperManager();
+    }
+
+    match /course_resources/{resourceId} {
+      allow read: if isSignedIn() &&
+        (resource.data.status == 'PUBLISHED' || isManager() || isTeacher());
+      allow create: if isSignedIn() && isManager();
+      allow update: if isSignedIn() &&
+        (isSuperManager() || resource.data.createdBy == request.auth.uid);
+      allow delete: if isSignedIn() && isSuperManager();
+    }
+
+    match /mock_tests/{testId} {
+      allow read: if isSignedIn() &&
+        (resource.data.status == 'PUBLISHED' || isManager() || isTeacher());
+      allow create: if isSignedIn() && isManager();
+      allow update: if isSignedIn() &&
+        (isSuperManager() || resource.data.createdBy == request.auth.uid);
+      allow delete: if isSignedIn() && isSuperManager();
+    }
+
     // Tests/results, calling_logs, audit_logs etc.
     match /{document=**} {
       allow read: if false;

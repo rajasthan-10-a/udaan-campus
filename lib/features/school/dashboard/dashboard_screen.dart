@@ -482,6 +482,12 @@ class ManagerDashboard extends StatelessWidget {
           subtitle: 'Create reviewable questions from content and share drafts.',
           onTap: () => Navigator.pushNamed(context, '/paper_builder'),
         ),
+        DashboardActionCard(
+          icon: Icons.menu_book,
+          title: 'Courses & Learning',
+          subtitle: 'Manage courses, videos, resources, and mock tests.',
+          onTap: () => Navigator.pushNamed(context, '/courses'),
+        ),
       ],
     );
   }
@@ -531,6 +537,12 @@ class TeacherDashboard extends StatelessWidget {
           title: 'AI Paper Builder',
           subtitle: 'Create reviewable questions from content and share drafts.',
           onTap: () => Navigator.pushNamed(context, '/paper_builder'),
+        ),
+        DashboardActionCard(
+          icon: Icons.menu_book,
+          title: 'Courses & Learning',
+          subtitle: 'Open published courses and study resources.',
+          onTap: () => Navigator.pushNamed(context, '/courses'),
         ),
         DashboardActionCard(
           icon: Icons.message,
@@ -591,6 +603,12 @@ class ParentDashboard extends StatelessWidget {
           onTap: () => Navigator.pushNamed(context, '/exam_results'),
         ),
         DashboardActionCard(
+          icon: Icons.menu_book,
+          title: 'Courses & Learning',
+          subtitle: 'Study published courses and learning resources.',
+          onTap: () => Navigator.pushNamed(context, '/courses'),
+        ),
+        DashboardActionCard(
           icon: Icons.notifications_active,
           title: 'Notifications',
           subtitle: 'Receive school announcements and alerts.',
@@ -635,6 +653,12 @@ class StudentDashboard extends StatelessWidget {
           title: 'Results',
           subtitle: 'See test scores and academic feedback.',
           onTap: () => Navigator.pushNamed(context, '/exam_results'),
+        ),
+        DashboardActionCard(
+          icon: Icons.menu_book,
+          title: 'Courses & Learning',
+          subtitle: 'Study published courses and mock-test resources.',
+          onTap: () => Navigator.pushNamed(context, '/courses'),
         ),
         DashboardActionCard(
           icon: Icons.notifications,
