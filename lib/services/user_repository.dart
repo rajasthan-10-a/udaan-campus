@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/app_user.dart';
-import '../models/user_role.dart';
 
 class UserRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -15,7 +14,7 @@ class UserRepository {
 
   Future<void> saveUser(AppUser user) async {
     final data = user.toJson();
-    data['normalizedRole'] = UserRole.normalize(user.role);
+    data.remove('role');
     data['updatedAt'] = FieldValue.serverTimestamp();
     await users.doc(user.uid).set(data, SetOptions(merge: true));
   }
@@ -30,12 +29,11 @@ class UserRepository {
     String? studentSection,
     List<String>? linkedChildren,
   }) async {
-    final normalizedRole = UserRole.normalize(role);
     final user = AppUser(
       uid: uid,
       email: email,
       displayName: displayName,
-      role: normalizedRole,
+      role: 'student',
       assignedClassSections: assignedClassSections,
       studentClassId: studentClassId,
       studentSection: studentSection,
@@ -43,7 +41,7 @@ class UserRepository {
     );
     await users.doc(uid).set({
       ...user.toJson(),
-      'normalizedRole': normalizedRole,
+      'normalizedRole': 'student',
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });

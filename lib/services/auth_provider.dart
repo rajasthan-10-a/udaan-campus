@@ -42,13 +42,18 @@ class AuthProvider extends ChangeNotifier {
       debugPrint('External user sync failed: $error\n$stackTrace');
     }
 
+    final tokenResult = await firebaseUser.getIdTokenResult(true);
+    final claimedRole = tokenResult.claims?['role'];
+    final trustedRole = UserRole.normalize(
+      claimedRole is String ? claimedRole : UserRole.student,
+    );
     final userProfile = await _userRepository.fetchUser(firebaseUser.uid);
     if (userProfile != null) {
       final updatedUser = AppUser(
         uid: userProfile.uid,
         email: firebaseUser.email ?? userProfile.email,
         displayName: firebaseUser.displayName ?? userProfile.displayName,
-        role: UserRole.normalize(userProfile.role),
+        role: trustedRole,
         photoUrl: firebaseUser.photoURL ?? userProfile.photoUrl,
         assignedClassSections: userProfile.assignedClassSections,
         studentClassId: userProfile.studentClassId,
@@ -88,17 +93,4 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateRole(String role) async {
-    if (_user == null) return;
-    final normalized = UserRole.normalize(role);
-    _user = AppUser(
-      uid: _user!.uid,
-      email: _user!.email,
-      displayName: _user!.displayName,
-      role: normalized,
-      photoUrl: _user!.photoUrl,
-    );
-    await _userRepository.saveUser(_user!);
-    notifyListeners();
-  }
 }

@@ -39,8 +39,11 @@ service cloud.firestore {
       );
 
       allow create: if isSignedIn() && (
-        // creation can be done by managers or server processes (or by auth triggers)
-        isManager() || request.auth.uid == userId
+        isManager() ||
+        (request.auth.uid == userId &&
+         request.resource.data.uid == userId &&
+         request.resource.data.role == 'student' &&
+         request.resource.data.normalizedRole == 'student')
       );
 
       allow update: if isSignedIn() && (

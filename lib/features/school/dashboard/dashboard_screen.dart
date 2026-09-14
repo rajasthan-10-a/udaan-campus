@@ -176,6 +176,60 @@ class DashboardActionCard extends StatelessWidget {
   }
 }
 
+void _openFeatureInfo(BuildContext context, String title, String description) {
+  Navigator.push(
+    context,
+    MaterialPageRoute<void>(
+      builder: (_) => FeatureInfoScreen(title: title, description: description),
+    ),
+  );
+}
+
+class FeatureInfoScreen extends StatelessWidget {
+  const FeatureInfoScreen({
+    super.key,
+    required this.title,
+    required this.description,
+  });
+
+  final String title;
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const UdaanLogoMark(size: 72),
+              const SizedBox(height: 20),
+              Text(title,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      )),
+              const SizedBox(height: 12),
+              Text(description,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyLarge),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back),
+                label: const Text('Back to dashboard'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class UdaanLogoMark extends StatelessWidget {
   const UdaanLogoMark({super.key, this.size = 54});
 
@@ -380,6 +434,12 @@ class ManagerDashboard extends StatelessWidget {
           icon: Icons.class_,
           title: 'Classes & Sections',
           subtitle: 'Create classes, assign teachers and review schedules.',
+          onTap: () => _openFeatureInfo(
+            context,
+            'Classes & Sections',
+            'Class and section management is available through the manager workspace. '
+                'Use the assigned class tools to review current sections.',
+          ),
         ),
         DashboardActionCard(
           icon: Icons.event_available,
@@ -397,6 +457,12 @@ class ManagerDashboard extends StatelessWidget {
           icon: Icons.notifications,
           title: 'Announcements',
           subtitle: 'Send school-wide notices and alerts.',
+          onTap: () => _openFeatureInfo(
+            context,
+            'Announcements',
+            'Announcements are shown to published student and parent portals. '
+                'Publishing controls are being kept restricted to authorized staff.',
+          ),
         ),
         DashboardActionCard(
           icon: Icons.analytics,
@@ -470,11 +536,21 @@ class TeacherDashboard extends StatelessWidget {
           icon: Icons.message,
           title: 'Messages',
           subtitle: 'Communicate with students and parents.',
+          onTap: () => _openFeatureInfo(
+            context,
+            'Messages',
+            'Use the linked student and homework workflows for verified school communication.',
+          ),
         ),
         DashboardActionCard(
           icon: Icons.calendar_today,
           title: 'Timetable',
           subtitle: 'View your daily schedule.',
+          onTap: () => _openFeatureInfo(
+            context,
+            'Timetable',
+            'Your timetable will appear here when the school publishes class timings.',
+          ),
         ),
       ],
     );
@@ -496,10 +572,11 @@ class ParentDashboard extends StatelessWidget {
           subtitle: 'Verify your profile and view all live updates.',
           onTap: () => Navigator.pushNamed(context, '/student_portal'),
         ),
-        const DashboardActionCard(
+        DashboardActionCard(
           icon: Icons.family_restroom,
           title: 'Child Attendance',
           subtitle: 'Monitor daily attendance and trends.',
+          onTap: () => Navigator.pushNamed(context, '/attendance_home'),
         ),
         DashboardActionCard(
           icon: Icons.book,
@@ -513,10 +590,15 @@ class ParentDashboard extends StatelessWidget {
           subtitle: 'Review test results and grades.',
           onTap: () => Navigator.pushNamed(context, '/exam_results'),
         ),
-        const DashboardActionCard(
+        DashboardActionCard(
           icon: Icons.notifications_active,
           title: 'Notifications',
           subtitle: 'Receive school announcements and alerts.',
+          onTap: () => _openFeatureInfo(
+            context,
+            'Notifications',
+            'Published school notices and important alerts will appear in your portal.',
+          ),
         ),
       ],
     );
@@ -532,10 +614,15 @@ class StudentDashboard extends StatelessWidget {
       title: 'Student Hub',
       description: 'Access your schedule, homework, results, and school updates.',
       children: [
-        const DashboardActionCard(
+        DashboardActionCard(
           icon: Icons.schedule,
           title: 'Class Schedule',
           subtitle: 'View today’s classes and timings.',
+          onTap: () => _openFeatureInfo(
+            context,
+            'Class Schedule',
+            'Your school timetable will appear here when published by management.',
+          ),
         ),
         DashboardActionCard(
           icon: Icons.assignment,
@@ -549,10 +636,15 @@ class StudentDashboard extends StatelessWidget {
           subtitle: 'See test scores and academic feedback.',
           onTap: () => Navigator.pushNamed(context, '/exam_results'),
         ),
-        const DashboardActionCard(
+        DashboardActionCard(
           icon: Icons.notifications,
           title: 'Announcements',
           subtitle: 'Stay updated with school news.',
+          onTap: () => _openFeatureInfo(
+            context,
+            'Announcements',
+            'Published school announcements will appear here automatically.',
+          ),
         ),
       ],
     );

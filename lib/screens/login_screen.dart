@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import '../services/auth_provider.dart';
 import '../features/school/dashboard/dashboard_screen.dart';
 
@@ -44,6 +45,28 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  Future<void> _handleForgotPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      setState(() => _errorMessage = 'Enter your email first to reset the password.');
+      return;
+    }
+    try {
+      await firebase.FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password reset email sent. Check your inbox.')),
+      );
+    } on firebase.FirebaseAuthException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = error.code == 'user-not-found'
+            ? 'No account was found for this email.'
+            : 'Unable to send password reset email. Try again.';
+      });
     }
   }
 
@@ -185,7 +208,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 40),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: _isLoading ? null : _handleForgotPassword,
                     child: const Text(
                       'Forgot Password?',
                       style: TextStyle(color: Colors.white70),

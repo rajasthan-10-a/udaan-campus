@@ -18,7 +18,9 @@ const port = Number(process.env.PORT || 8080);
 
 app.use(express.json({ limit: '32kb' }));
 app.use(cors({
-  origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : true,
+  origin: process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean)
+    : false,
   methods: ['GET', 'POST'],
 }));
 app.use(helmet());
@@ -95,14 +97,31 @@ app.post('/v1/parent-links', requireAuth, requireManager, asyncRoute(async (req,
     return res.status(400).json({ error: 'Parent and student must be different users' });
   }
 
+  const [parentRecord, studentRecord] = await Promise.all([
+    admin.auth().getUser(parentUid),
+    db.collection('students').doc(studentUid).get(),
+  ]);
+  if (!studentRecord.exists) {
+    return res.status(404).json({ error: 'Student profile not found' });
+  }
+  if ((parentRecord.customClaims || {}).role !== 'parent') {
+    return res.status(400).json({ error: 'Target account is not a parent account' });
+  }
+
   const linkId = `${parentUid}_${studentUid}`;
-  await db.collection('parent_links').doc(linkId).set({
+  const batch = db.batch();
+  batch.set(db.collection('users').doc(parentUid), {
+    linkedChildren: admin.firestore.FieldValue.arrayUnion(studentUid),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
+  batch.set(db.collection('parent_links').doc(linkId), {
     parentUid,
     studentUid,
     createdBy: req.user.uid,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     active: true,
   }, { merge: true });
+  await batch.commit();
 
   return res.status(201).json({ ok: true, linkId });
 }));

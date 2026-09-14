@@ -31,7 +31,8 @@ class AuthService {
       'uid': uid,
       'email': email,
       'displayName': displayName,
-      'role': role,
+      'role': 'student',
+      'normalizedRole': 'student',
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });

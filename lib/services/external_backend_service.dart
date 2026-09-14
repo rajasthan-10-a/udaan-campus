@@ -72,14 +72,14 @@ class ExternalBackendService {
     if (user == null) {
       throw StateError('A signed-in Firebase user is required');
     }
-    final token = await user.getIdToken();
+    final token = await user.getIdToken(true);
     if (token == null || token.isEmpty) {
       throw StateError('Firebase ID token is unavailable');
     }
     return _client
         .post(
           Uri.parse('$baseUrl$path'),
-          headers: {
+          headers: <String, String>{
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
           },

@@ -32,6 +32,26 @@ describe('Firestore security rules', () => {
     await assertFails(ref.update({ role: 'super_manager' }));
   });
 
+  it('prevents a new user from creating a privileged profile', async () => {
+    const user = testEnv.authenticatedContext('newUser', { role: 'student' });
+    const db = user.firestore();
+    const ref = db.collection('users').doc('newUser');
+    await assertFails(ref.set({
+      uid: 'newUser',
+      email: 'new@example.com',
+      displayName: 'New User',
+      role: 'manager',
+      normalizedRole: 'manager',
+    }));
+    await assertSucceeds(ref.set({
+      uid: 'newUser',
+      email: 'new@example.com',
+      displayName: 'New User',
+      role: 'student',
+      normalizedRole: 'student',
+    }));
+  });
+
   it('allows super_manager (via custom claim) to set role on a user', async () => {
     const sm = testEnv.authenticatedContext('ownerUid', { role: 'super_manager' });
     const db = sm.firestore();
