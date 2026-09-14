@@ -408,6 +408,7 @@ class ManagerDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<AuthProvider>(context, listen: false).user;
     return DashboardShell(
       title: 'Manager Panel',
       description: 'Manage school operations, users, and academic resources.',
@@ -488,6 +489,13 @@ class ManagerDashboard extends StatelessWidget {
           subtitle: 'Manage courses, videos, resources, and mock tests.',
           onTap: () => Navigator.pushNamed(context, '/courses'),
         ),
+        if (user?.role == UserRole.superManager)
+          DashboardActionCard(
+            icon: Icons.security,
+            title: 'Security Center',
+            subtitle: 'Review protected audit events and security activity.',
+            onTap: () => Navigator.pushNamed(context, '/security_center'),
+          ),
       ],
     );
   }

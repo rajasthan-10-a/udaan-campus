@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "mocha --timeout 20000"
+    "test": "mocha --timeout 20000",
+    "test:rules": "firebase emulators:exec --only firestore \"npm test\""
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^3.0.2",

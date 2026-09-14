@@ -165,6 +165,15 @@ service cloud.firestore {
       allow delete: if isSignedIn() && isSuperManager();
     }
 
+    match /parent_links/{linkId} {
+      allow read: if isSignedIn() &&
+        (isManager() ||
+         request.auth.uid == resource.data.parentUid ||
+         isLinkedParent(resource.data.studentUid));
+      allow create, update: if isSignedIn() && isManager();
+      allow delete: if isSignedIn() && isSuperManager();
+    }
+
     // Tests/results, calling_logs, audit_logs etc.
     match /{document=**} {
       allow read: if false;

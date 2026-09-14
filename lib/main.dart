@@ -19,6 +19,7 @@ import 'features/school/homework/homework_screen.dart';
 import 'features/school/student/student_portal_screen.dart';
 import 'features/school/student/student_qr_verification_screen.dart';
 import 'features/school/courses/course_workspace_screen.dart';
+import 'features/school/security/security_center_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -95,6 +96,7 @@ class _UdaanAppRouter extends StatelessWidget {
             '/student_portal': (context) => const StudentPortalScreen(),
             '/student_qr_verify': (context) => const StudentQrVerificationScreen(),
             '/courses': (context) => const CourseWorkspaceScreen(),
+            '/security_center': (context) => const SecurityCenterScreen(),
           },
         );
       },

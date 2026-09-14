@@ -64,6 +64,25 @@ class ExternalBackendService {
     return uid;
   }
 
+  Future<void> createAuditLog({
+    required String action,
+    required String targetType,
+    required String targetId,
+    required String performedByRole,
+    Map<String, dynamic>? oldValue,
+    Map<String, dynamic>? newValue,
+  }) async {
+    final response = await _authorizedPost('/v1/audit-logs', {
+      'action': action,
+      'targetType': targetType,
+      'targetId': targetId,
+      'performedByRole': performedByRole,
+      'oldValue': oldValue,
+      'newValue': newValue,
+    });
+    _requireSuccess(response, 'Audit log failed');
+  }
+
   Future<http.Response> _authorizedPost(
     String path,
     Map<String, dynamic> body,
