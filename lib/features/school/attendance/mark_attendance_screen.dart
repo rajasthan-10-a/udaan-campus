@@ -173,19 +173,23 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
       await _attendanceService.saveBulkAttendance(records: records);
 
       final auditId = _auditService.buildAuditId('attendance', widget.classId, DateTime.now());
-      await _auditService.createAuditLog(
-        AuditLogModel(
-          auditId: auditId,
-          action: 'ATTENDANCE_UPDATED',
-          targetType: 'attendance',
-          targetId: widget.classId,
-          performedBy: user.uid,
-          performedByRole: user.role,
-          oldValue: null,
-          newValue: {'statusSummary': summary.toJson()},
-          timestamp: DateTime.now(),
-        ),
-      );
+      try {
+        await _auditService.createAuditLog(
+          AuditLogModel(
+            auditId: auditId,
+            action: 'ATTENDANCE_UPDATED',
+            targetType: 'attendance',
+            targetId: widget.classId,
+            performedBy: user.uid,
+            performedByRole: user.role,
+            oldValue: null,
+            newValue: {'statusSummary': summary.toJson()},
+            timestamp: DateTime.now(),
+          ),
+        );
+      } catch (_) {
+        // Attendance is already persisted; audit logging must not make the save look unsuccessful.
+      }
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Attendance saved successfully.')));

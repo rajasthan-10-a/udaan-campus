@@ -11,7 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:udaan_campus/screens/login_screen.dart';
 
 void main() {
-  testWidgets('Udaan Campus login screen smoke test', (WidgetTester tester) async {
+  testWidgets('Udaan Edu ERP login screen smoke test', (WidgetTester tester) async {
     WidgetsFlutterBinding.ensureInitialized();
 
     await tester.pumpWidget(
@@ -21,7 +21,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Udaan Campus'), findsOneWidget);
+    expect(find.text('Udaan Edu ERP'), findsOneWidget);
     expect(find.byType(TextFormField), findsNWidgets(2));
     expect(find.text('Login'), findsOneWidget);
   });

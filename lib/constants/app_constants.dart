@@ -1,8 +1,10 @@
 // App-wide constants
 class AppConstants {
   // App Info
-  static const String appName = 'Udaan Campus';
+  static const String appName = 'Udaan Edu ERP';
   static const String appVersion = '1.0.0';
+  static const String brandName = 'Udaan Academy';
+  static const String developedBy = 'Developed by Udaan Academy';
   
   // API Configuration
   static const String apiBaseUrl = 'https://api.udaancampus.com';

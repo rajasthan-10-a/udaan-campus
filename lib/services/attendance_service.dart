@@ -5,6 +5,7 @@ import 'package:udaan_campus/models/attendance_model.dart';
 import 'package:udaan_campus/models/attendance_report_model.dart';
 import 'package:udaan_campus/models/attendance_summary_model.dart';
 import 'package:udaan_campus/models/student.dart';
+import 'package:udaan_campus/models/user_role.dart';
 
 class AttendanceService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -28,7 +29,7 @@ class AttendanceService {
     }
 
     final data = userSnapshot.data()!;
-    if (role == 'teacher') {
+    if (UserRole.isTeacher(role)) {
       return data['assignedClassSections'] != null
           ? List<String>.from(data['assignedClassSections'] as List<dynamic>)
           : [];

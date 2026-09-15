@@ -8,6 +8,7 @@ class AppUser {
   final String? studentClassId;
   final String? studentSection;
   final List<String>? linkedChildren;
+  final List<String>? accessPermissions;
 
   AppUser({
     required this.uid,
@@ -19,6 +20,7 @@ class AppUser {
     this.studentClassId,
     this.studentSection,
     this.linkedChildren,
+    this.accessPermissions,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
@@ -35,6 +37,9 @@ class AppUser {
       studentSection: json['studentSection'] as String?,
       linkedChildren: json['linkedChildren'] != null
           ? List<String>.from(json['linkedChildren'] as List<dynamic>)
+          : null,
+      accessPermissions: json['accessPermissions'] != null
+          ? List<String>.from(json['accessPermissions'] as List<dynamic>)
           : null,
     );
   }
@@ -54,6 +59,7 @@ class AppUser {
     if (studentClassId != null) data['studentClassId'] = studentClassId;
     if (studentSection != null) data['studentSection'] = studentSection;
     if (linkedChildren != null) data['linkedChildren'] = linkedChildren;
+    if (accessPermissions != null) data['accessPermissions'] = accessPermissions;
 
     return data;
   }

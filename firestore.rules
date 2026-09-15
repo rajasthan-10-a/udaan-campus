@@ -23,6 +23,14 @@ service cloud.firestore {
       return isSuperManager() || isManager() || getRoleFromClaims() == 'teacher';
     }
 
+    function isParent() {
+      return getRoleFromClaims() == 'parent';
+    }
+
+    function isParentOfStudent(studentId) {
+      return isParent() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && studentId in get(/databases/$(database)/documents/users/$(request.auth.uid)).data.linkedChildren;
+    }
+
     // Users collection: only backend/admin (super_manager) may change roles and sensitive fields
     match /users/{userId} {
       allow read: if isSignedIn() && (
@@ -63,6 +71,34 @@ service cloud.firestore {
       );
     }
 
+    // Staff and parents need the student roster and marksheets for class selection and academic progress.
+    match /students/{studentId} {
+      allow read: if isSignedIn() && (
+        isSuperManager() || isManager() || isTeacher() || request.auth.uid == studentId || isParentOfStudent(studentId)
+      );
+      allow write: if isSignedIn() && (isSuperManager() || isManager() || isTeacher());
+    }
+
+    // Results are read by the student, their parent, and school staff.
+    match /test_results/{resultId} {
+      allow read: if isSignedIn() && (
+        isSuperManager() || isManager() || isTeacher() || request.auth.uid == resource.data.studentId || isParentOfStudent(resource.data.studentId)
+      );
+      allow create, update, delete: if isSignedIn() && (isSuperManager() || isManager() || isTeacher());
+    }
+
+    match /tests/{testId} {
+      allow read: if isSignedIn() && (isSuperManager() || isManager() || isTeacher());
+      allow create, update, delete: if isSignedIn() && (isSuperManager() || isManager() || isTeacher());
+    }
+
+    // Campus notices are visible to all signed-in users; staff can publish them.
+    match /notifications/{noticeId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && (isSuperManager() || isManager() || isTeacher());
+      allow delete: if isSignedIn() && isSuperManager();
+    }
+
     // Homework: published visible to students/parents; creation/moderation by teacher/manager/super
     match /homework/{homeworkId} {
       allow read: if isSignedIn() && (
@@ -71,6 +107,23 @@ service cloud.firestore {
       allow create: if isSignedIn() && (isTeacher() || isManager() || isSuperManager());
       allow update: if isSignedIn() && (isSuperManager() || isManager() || isTeacher());
       allow delete: if isSignedIn() && isSuperManager();
+    }
+
+    // Learning courses are visible to every signed-in registered user; managers and super-managers can publish them.
+    match /learning_courses/{courseId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && (isSuperManager() || isManager());
+      allow delete: if isSignedIn() && isSuperManager();
+    }
+
+    match /classes/{classId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isSignedIn() && isManager();
+    }
+
+    match /calling_logs/{logId} {
+      allow read, create, update: if isSignedIn() && (isSuperManager() || isManager() || isTeacher());
+      allow delete: if isSignedIn() && isManager();
     }
 
     // Tests/results, calling_logs, audit_logs etc.

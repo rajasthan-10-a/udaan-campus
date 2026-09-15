@@ -102,19 +102,21 @@ class _CreateHomeworkScreenState extends State<CreateHomeworkScreen> {
   }
 
   Future<void> _pickAttachment() async {
-    final result = await FilePicker.pickFiles(allowMultiple: true);
-    if (result == null) return;
+    final result = await FilePicker.pickFiles();
+    if (result.isEmpty) return;
     if (!mounted) return;
 
     final userUid = Provider.of<AuthProvider>(context, listen: false).user?.uid ?? 'unknown';
-    for (final file in result.files) {
+    for (final file in result) {
       if (!_homeworkService.validateFileSize(file)) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('File is too large.')));
         continue;
       }
-      if (file.path == null) continue;
-      final localFile = File(file.path!);
+      final filePath = file.path;
+      if (filePath == null || filePath.isEmpty) continue;
+      final fileSize = await file.length();
+      final localFile = File(filePath);
       final fileUrl = await _homeworkService.uploadAttachment(
         localFile,
         userUid,
@@ -127,7 +129,7 @@ class _CreateHomeworkScreenState extends State<CreateHomeworkScreen> {
           filePath: file.path!,
           fileName: file.name,
           fileType: file.extension ?? 'unknown',
-          fileSize: file.size,
+          fileSize: fileSize,
           fileUrl: fileUrl,
         ));
       });

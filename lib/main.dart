@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'services/auth_provider.dart';
@@ -12,11 +13,26 @@ import 'features/school/attendance/monthly_attendance_screen.dart';
 import 'features/school/attendance/absent_students_screen.dart';
 import 'features/school/exams/test_management_screen.dart';
 import 'features/school/exams/exam_results_screen.dart';
+import 'features/school/exams/result_entry_screen.dart';
+import 'features/school/notice_board_screen.dart';
 import 'features/school/homework/homework_screen.dart';
+import 'features/school/learning/learning_screen.dart';
+import 'features/school/paper/paper_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FirebaseService.initialize();
+
+  const supabaseUrl = String.fromEnvironment('SUPABASE_URL', defaultValue: '');
+  const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: '');
+
+  if (supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty) {
+    await Supabase.initialize(
+      url: supabaseUrl,
+      publishableKey: supabaseAnonKey,
+    );
+  }
+
   runApp(const UdaanCampusApp());
 }
 
@@ -40,7 +56,7 @@ class _UdaanAppRouter extends StatelessWidget {
     return Consumer<AuthProvider>(
       builder: (context, auth, child) {
         return MaterialApp(
-          title: 'Udaan Campus',
+          title: 'Udaan Edu ERP',
           theme: ThemeData(
             primarySwatch: Colors.blue,
             useMaterial3: true,
@@ -57,6 +73,7 @@ class _UdaanAppRouter extends StatelessWidget {
             ),
           ),
           themeMode: ThemeMode.system,
+          debugShowCheckedModeBanner: false,
           home: auth.isLoading
               ? const Scaffold(body: Center(child: CircularProgressIndicator()))
               : auth.isAuthenticated
@@ -73,7 +90,11 @@ class _UdaanAppRouter extends StatelessWidget {
             '/absent_students': (context) => const AbsentStudentsScreen(),
             '/exam_management': (context) => const TestManagementScreen(),
             '/exam_results': (context) => const ExamResultsScreen(),
+            '/result': (context) => const ResultEntryScreen(),
+            '/notice_board': (context) => const NoticeBoardScreen(),
+            '/learning': (context) => const LearningScreen(),
             '/homework': (context) => const HomeworkScreen(),
+            '/paper': (context) => const PaperScreen(),
           },
         );
       },

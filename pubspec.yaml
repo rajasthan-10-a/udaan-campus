@@ -62,7 +62,7 @@ dependencies:
   cloud_firestore: ^6.8.0
   firebase_storage: 13.4.6
   firebase_messaging: ^16.5.0
-  file_picker: ^11.0.3
+  file_picker: ^12.3.0
   
   # Supabase storage and backend support
   supabase_flutter: ^2.17.1
@@ -72,6 +72,9 @@ dependencies:
   mobile_scanner: ^7.4.0
   qr_flutter: ^4.1.0
   record: ^7.1.1
+  share_plus: ^13.3.0
+  printing: ^5.13.1
+  pdf: ^3.12.0
 
 dev_dependencies:
   flutter_test:

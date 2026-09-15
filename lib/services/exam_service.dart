@@ -133,12 +133,101 @@ class ExamService {
   }
 
   Future<List<TestResultModel>> fetchResultsForStudent(String studentId) async {
+    final existing = <TestResultModel>[];
     final query = await testResults
         .where('studentId', isEqualTo: studentId)
         .orderBy('createdAt', descending: true)
         .get();
-    return query.docs
-        .map((doc) => TestResultModel.fromJson(doc.data()))
-        .toList();
+    existing.addAll(
+      query.docs.map((doc) => TestResultModel.fromJson(doc.data())).toList(),
+    );
+
+    final studentDoc = await _firestore.collection('students').doc(studentId).get();
+    final studentData = studentDoc.data();
+    if (studentData == null || studentData['marksheets'] is! Map) {
+      return existing;
+    }
+
+    final marksheets = Map<String, dynamic>.from(studentData['marksheets'] as Map);
+    final merged = <String, TestResultModel>{};
+    for (final result in existing) {
+      merged[result.resultId] = result;
+    }
+
+    final studentName = studentData['name'] ?? '';
+    final classId = studentData['classId'] ?? '';
+    final section = studentData['section'] ?? '';
+
+    for (final entry in marksheets.entries) {
+      final examKey = entry.key.toString();
+      final examValue = entry.value;
+      if (examValue is! Map) continue;
+
+      final subjects = Map<String, dynamic>.from(examValue['subjects'] ?? const {});
+      if (subjects.isEmpty) continue;
+
+      final maxPerSubject = (examValue['outOf'] is num && examValue['outOf'] > 0)
+          ? (examValue['outOf'] as num).toInt() ~/ subjects.length
+          : 10;
+
+      final examTitle = _humanizeExamKey(examKey);
+      for (final subjectEntry in subjects.entries) {
+        final subject = subjectEntry.key.toString();
+        final value = subjectEntry.value;
+        final resultId = '${examKey}_${studentId}_$subject';
+
+        if (value is String && value.trim().isNotEmpty) {
+          merged[resultId] = TestResultModel(
+            resultId: resultId,
+            testId: examKey,
+            testTitle: examTitle,
+            subject: subject,
+            studentId: studentId,
+            studentName: studentName,
+            classId: classId,
+            section: section,
+            marksObtained: 0,
+            maxMarks: 0,
+            grade: value,
+            createdAt: examValue['updatedAt'] is Timestamp
+                ? (examValue['updatedAt'] as Timestamp).toDate()
+                : DateTime.now(),
+            createdBy: 'system',
+          );
+          continue;
+        }
+
+        final marks = value is num ? value.toDouble() : 0.0;
+        merged[resultId] = TestResultModel(
+          resultId: resultId,
+          testId: examKey,
+          testTitle: examTitle,
+          subject: subject,
+          studentId: studentId,
+          studentName: studentName,
+          classId: classId,
+          section: section,
+          marksObtained: marks,
+          maxMarks: maxPerSubject,
+          grade: calculateGrade(marks, maxPerSubject),
+          createdAt: examValue['updatedAt'] is Timestamp
+              ? (examValue['updatedAt'] as Timestamp).toDate()
+              : DateTime.now(),
+          createdBy: 'system',
+        );
+      }
+    }
+
+    final ordered = merged.values.toList();
+    ordered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return ordered;
+  }
+
+  String _humanizeExamKey(String examKey) {
+    final normalized = examKey.replaceAll('_', ' ');
+    final words = normalized.split(' ');
+    return words
+        .map((word) => word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1))
+        .join(' ');
   }
 }

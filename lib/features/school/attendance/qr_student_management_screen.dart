@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:udaan_campus/models/student.dart';
 import 'package:udaan_campus/services/attendance_service.dart';
 import 'package:udaan_campus/features/school/attendance/student_qr_screen.dart';
+import 'package:udaan_campus/features/school/attendance/add_student_screen.dart';
 
 class QrStudentManagementScreen extends StatefulWidget {
   const QrStudentManagementScreen({super.key});
@@ -92,6 +93,17 @@ class _QrStudentManagementScreenState extends State<QrStudentManagementScreen> {
       appBar: AppBar(
         title: const Text('QR Student Management'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.person_add),
+            tooltip: 'Add student',
+            onPressed: () async {
+              final added = await Navigator.push<bool>(
+                context,
+                MaterialPageRoute(builder: (_) => const AddStudentScreen()),
+              );
+              if (added == true) _loadStudents();
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadStudents,

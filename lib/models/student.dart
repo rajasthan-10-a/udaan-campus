@@ -12,6 +12,14 @@ class Student {
   final String? section;
   final String? parentName;
   final String? parentPhone;
+  final String? fatherName;
+  final String? motherName;
+  final String? srNumber;
+  final String? dateOfBirth;
+  final String? dateOfBirthWords;
+  final bool rte;
+  final double? fees;
+  final String? fatherOccupation;
   final String? qrToken;
   final bool active;
 
@@ -28,6 +36,14 @@ class Student {
     this.section,
     this.parentName,
     this.parentPhone,
+    this.fatherName,
+    this.motherName,
+    this.srNumber,
+    this.dateOfBirth,
+    this.dateOfBirthWords,
+    this.rte = false,
+    this.fees,
+    this.fatherOccupation,
     this.qrToken,
     this.active = true,
   });
@@ -46,6 +62,14 @@ class Student {
       section: json['section'] as String?,
       parentName: json['parentName'] as String?,
       parentPhone: json['parentPhone'] as String?,
+      fatherName: json['fatherName'] as String? ?? json['parentName'] as String?,
+      motherName: json['motherName'] as String?,
+      srNumber: json['srNumber'] as String?,
+      dateOfBirth: json['dateOfBirth'] as String?,
+      dateOfBirthWords: json['dateOfBirthWords'] as String?,
+      rte: json['rte'] == true,
+      fees: json['fees'] is num ? (json['fees'] as num).toDouble() : double.tryParse(json['fees']?.toString() ?? ''),
+      fatherOccupation: json['fatherOccupation'] as String?,
       qrToken: json['qrToken'] as String?,
       active: json['active'] is bool ? json['active'] as bool : true,
     );
@@ -66,6 +90,14 @@ class Student {
     if (section != null) data['section'] = section;
     if (parentName != null) data['parentName'] = parentName;
     if (parentPhone != null) data['parentPhone'] = parentPhone;
+    if (fatherName != null) data['fatherName'] = fatherName;
+    if (motherName != null) data['motherName'] = motherName;
+    if (srNumber != null) data['srNumber'] = srNumber;
+    if (dateOfBirth != null) data['dateOfBirth'] = dateOfBirth;
+    if (dateOfBirthWords != null) data['dateOfBirthWords'] = dateOfBirthWords;
+    data['rte'] = rte;
+    if (fees != null) data['fees'] = fees;
+    if (fatherOccupation != null) data['fatherOccupation'] = fatherOccupation;
     if (qrToken != null) data['qrToken'] = qrToken;
     data['active'] = active;
     return data;

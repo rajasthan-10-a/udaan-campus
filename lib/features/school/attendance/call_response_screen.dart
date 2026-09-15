@@ -63,20 +63,79 @@ class _CallResponseScreenState extends State<CallResponseScreen> {
     }
   }
 
+  Future<void> _recordCallAttempt({required String outcome, String? notes}) async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final user = auth.user;
+    if (user == null) return;
+
+    final now = DateTime.now();
+    final log = CallingLogModel(
+      callId: CallingLogModel.buildCallId(widget.student.id, now),
+      studentId: widget.student.id,
+      studentName: widget.student.name,
+      classId: widget.student.classId ?? '',
+      className: widget.student.department,
+      section: widget.student.section ?? '',
+      attendanceDate: widget.attendanceDate,
+      parentPhone: widget.student.parentPhone ?? '',
+      parentName: widget.student.parentName,
+      calledByUid: user.uid,
+      calledByName: user.displayName,
+      calledByRole: user.role,
+      callOutcome: outcome,
+      responseNotes: notes,
+      followUpRequired: false,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    await _callingLogService.saveCallingLog(log);
+    await _loadCallLogs();
+  }
+
   Future<void> _callParent() async {
-    final phone = widget.student.parentPhone;
+    await _launchParentChannel('call');
+  }
+
+  Future<void> _launchParentChannel(String channel) async {
+    final phone = widget.student.parentPhone?.trim();
     if (phone == null || phone.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Parent phone number not available.')));
       return;
     }
-    final uri = Uri.parse('tel:$phone');
-    if (await canLaunchUrl(uri)) {
+    final message = Uri.encodeComponent(
+      'Udaan Academy attendance update for ${widget.student.name}. Please contact the school for details.',
+    );
+    final uri = channel == 'call'
+        ? Uri(scheme: 'tel', path: phone)
+        : channel == 'whatsapp'
+            ? Uri.parse('https://wa.me/${phone.replaceAll(RegExp(r'[^0-9]'), '')}?text=$message')
+            : Uri.parse('sms:$phone?body=$message');
+    final label = channel == 'call' ? 'Call' : channel == 'whatsapp' ? 'WhatsApp' : 'SMS';
+    try {
+      if (await canLaunchUrl(uri)) {
+        await _recordCallAttempt(
+          outcome: '$label Attempted',
+          notes: '$label initiated to parent number $phone.',
+        );
+        if (!mounted) return;
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        await _recordCallAttempt(
+          outcome: '$label Failed',
+          notes: 'Unable to open $label for $phone.',
+        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Unable to open $label.')));
+      }
+    } catch (_) {
+      await _recordCallAttempt(
+        outcome: '$label Failed',
+        notes: 'Exception while opening $label for $phone.',
+      );
       if (!mounted) return;
-      await launchUrl(uri);
-    } else {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Unable to place call.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Unable to open $label.')));
     }
   }
 
@@ -270,13 +329,26 @@ class _CallResponseScreenState extends State<CallResponseScreen> {
                     Text('Absent Date: ${DateTimeUtils.formatDate(widget.attendanceDate)}'),
                     Text('Parent: ${widget.student.parentName ?? 'N/A'}'),
                     Text('Phone: ${widget.student.parentPhone ?? 'N/A'}'),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.call),
-                        label: const Text('Call Parent'),
-                        onPressed: _callParent,
-                      ),
+                    Wrap(
+                      alignment: WrapAlignment.end,
+                      spacing: 8,
+                      children: [
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.call),
+                          label: const Text('Call'),
+                          onPressed: _callParent,
+                        ),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.chat),
+                          label: const Text('WhatsApp'),
+                          onPressed: () => _launchParentChannel('whatsapp'),
+                        ),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.sms),
+                          label: const Text('SMS'),
+                          onPressed: () => _launchParentChannel('sms'),
+                        ),
+                      ],
                     ),
                   ],
                 ),

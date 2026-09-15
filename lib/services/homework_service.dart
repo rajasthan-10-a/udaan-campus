@@ -245,6 +245,6 @@ class HomeworkService {
   }
 
   bool validateFileSize(PlatformFile file) {
-    return file.size <= maxAttachmentBytes;
+    return (file.lengthSync() ?? 0) <= maxAttachmentBytes;
   }
 }
